@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { auth, signInWithGoogle, logout } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import Generator from './Generator';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -15,11 +17,13 @@ import {
   Twitter,
   Layout,
   Layers,
-  Key
+  Key,
+  Home
 } from 'lucide-react';
 
-const Navbar = () => {
+const Navbar = ({ user }) => {
   const [scrolled, setScrolled] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -40,17 +44,58 @@ const Navbar = () => {
           <li><a href="#models">AI Models</a></li>
           <li><a href="#pricing">Pricing</a></li>
         </ul>
-        <div className="nav-actions">
-          <a href="/generator" className="btn btn-primary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.9rem', textDecoration: 'none' }}>
-            Get Started
-          </a>
+        <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          {user ? (
+            <div style={{ position: 'relative' }}>
+              <div
+                onClick={() => setShowDropdown(!showDropdown)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', padding: '0.4rem', borderRadius: '2rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)' }}
+              >
+                <img src={user.photoURL} alt={user.displayName} style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
+                <span style={{ fontSize: '0.9rem', fontWeight: '600', paddingRight: '0.5rem' }}>{user.displayName.split(' ')[0]}</span>
+              </div>
+
+              <AnimatePresence>
+                {showDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    style={{ position: 'absolute', top: '120%', right: 0, background: '#0f172a', border: '1px solid var(--glass-border)', borderRadius: '1rem', padding: '0.5rem', minWidth: '160px', zIndex: 100 }}
+                  >
+                    <a href="/generator" style={{ display: 'block', padding: '0.75rem 1rem', color: 'white', textDecoration: 'none', fontSize: '0.85rem' }}>My Books</a>
+                    <button
+                      onClick={logout}
+                      style={{ width: '100%', textAlign: 'left', padding: '0.75rem 1rem', background: 'none', border: 'none', color: '#ef4444', fontSize: '0.85rem', fontWeight: '600' }}
+                    >
+                      Sign Out
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <button
+              onClick={signInWithGoogle}
+              className="btn btn-primary"
+              style={{ padding: '0.6rem 1.2rem', fontSize: '0.9rem' }}
+            >
+              Sign In
+            </button>
+          )}
         </div>
       </div>
     </nav>
   );
 };
 
-const Hero = () => {
+const Hero = ({ user }) => {
+  const navigate = useNavigate();
+  const handleStart = (e) => {
+    e.preventDefault();
+    if (user) navigate('/generator');
+    else signInWithGoogle();
+  };
   return (
     <section className="hero">
       <div className="container">
@@ -71,10 +116,10 @@ const Hero = () => {
             The world's most powerful AI book generator. From plot outlines to full-length novels, AetherWriter turns your vision into a published reality in minutes.
           </p>
           <div className="hero-btns">
-            <a href="/generator" className="btn btn-primary">
+            <button onClick={handleStart} className="btn btn-primary">
               Start Writing For Free
               <ChevronRight size={18} />
-            </a>
+            </button>
             <a href="#templates" className="btn btn-secondary">
               Explore Templates
             </a>
@@ -419,12 +464,12 @@ const SocialProof = () => {
   );
 };
 
-const AppHome = () => {
+const AppHome = ({ user }) => {
   // Original App Component Content (Navbar, Hero, Features, etc.)
   return (
     <div className="app">
-      <Navbar />
-      <Hero />
+      <Navbar user={user} />
+      <Hero user={user} />
       <SocialProof />
       <HowItWorks />
       <SampleBooks />
@@ -451,11 +496,33 @@ const AppHome = () => {
 };
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#020203' }}>
+        <div className="spin" style={{ width: '40px', height: '40px', border: '3px solid rgba(99,102,241,0.2)', borderTopColor: '#6366f1', borderRadius: '50%' }}></div>
+      </div>
+    );
+  }
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<AppHome />} />
-        <Route path="/generator" element={<Generator />} />
+        <Route path="/" element={<AppHome user={user} />} />
+        <Route
+          path="/generator"
+          element={user ? <Generator user={user} /> : <Navigate to="/" />}
+        />
       </Routes>
     </Router>
   );

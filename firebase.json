@@ -1,0 +1,10 @@
+{
+  "auth": {
+    "providers": {
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "AetherWriter AI",
+        "supportEmail": "verdant.a.joshi@gmail.com"
+      }
+    }
+  }
+}

@@ -8,10 +8,11 @@ import {
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import jsPDF from 'jspdf';
 import { useNavigate } from 'react-router-dom';
+import { auth, logout } from './firebase';
 
 const SYSTEM_PROMPT = "You are a world-class best-selling author and ghostwriter. Your goal is to write high-quality, engaging, and typo-free content. You excel at showing, not telling, and creating immersive narratives. IMPORTANT: You must create ORIGINAL characters and ORIGINAL worlds. Do NOT use famous IP names or copyrighted characters. Create unique names, settings, and lore that fit the requested genre vibes. This output must be 100% legal, sellable, and scalable.";
 
-const Generator = () => {
+const Generator = ({ user }) => {
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [generating, setGenerating] = useState(false);
@@ -406,6 +407,17 @@ const Generator = () => {
                             </div>
 
                             <div className="side-controls">
+                                <div style={{ marginBottom: '2rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '1.5rem', border: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
+                                        <img src={user?.photoURL} alt={user?.displayName} style={{ width: '40px', height: '40px', borderRadius: '50%', border: '2px solid var(--accent)' }} />
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <p style={{ fontSize: '0.9rem', fontWeight: '800', color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.displayName}</p>
+                                            <p style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>Sovereign Author</p>
+                                        </div>
+                                        <div style={{ position: 'absolute', right: '-10px', top: '-10px', width: '50px', height: '50px', background: 'var(--accent-glow)', filter: 'blur(20px)', borderRadius: '50%' }}></div>
+                                    </div>
+                                </div>
+
                                 <div className="control-card" style={{ border: !formData.apiKey ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid var(--border)' }}>
                                     <h4 className="card-subtitle">Sovereign Encryption <span style={{ color: '#ef4444', marginLeft: 'auto' }}>REQUIRED</span></h4>
                                     <div className="auth-field" style={{ borderColor: !formData.apiKey ? 'rgba(239, 68, 68, 0.4)' : 'var(--border)' }}>

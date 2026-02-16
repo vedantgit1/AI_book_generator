@@ -12,6 +12,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "file-saver": "^2.0.5",
+    "firebase": "^12.9.0",
     "framer-motion": "^12.34.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.1.0",
