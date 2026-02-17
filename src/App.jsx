@@ -209,35 +209,161 @@ const HowItWorks = () => {
 };
 
 const SampleBooks = () => {
+  const [index, setIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
   const samples = [
     { title: "The Circuit of Souls", author: "A.I. Genesis", cover: "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=400&h=600&auto=format&fit=crop" },
     { title: "Grains of Eternity", author: "Digital Scribe", cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=400&h=600&auto=format&fit=crop" },
     { title: "Protocol Zero", author: "Agent Black", cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=400&h=600&auto=format&fit=crop" },
-    { title: "The Last Singularity", author: "Future Mind", cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=400&h=600&auto=format&fit=crop" }
+    { title: "The Last Singularity", author: "Future Mind", cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=400&h=600&auto=format&fit=crop" },
+    { title: "Neon Frontiers", author: "Cyber Pen", cover: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400&h=600&auto=format&fit=crop" },
+    { title: "Shadows of Aether", author: "Mystic AI", cover: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=400&h=600&auto=format&fit=crop" },
+    { title: "The Silicon Heart", author: "Bionic Bard", cover: "https://images.unsplash.com/photo-1589998059171-988d887df646?q=80&w=400&h=600&auto=format&fit=crop" },
+    { title: "Echoes of Orion", author: "Star Writer", cover: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=400&h=600&auto=format&fit=crop" }
   ];
 
+  useEffect(() => {
+    if (isPaused) return;
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % samples.length);
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [isPaused, samples.length]);
+
+  const nextStep = () => {
+    setIndex((prev) => (prev + 1) % samples.length);
+  };
+
+  const prevStep = () => {
+    setIndex((prev) => (prev - 1 + samples.length) % samples.length);
+  };
+
   return (
-    <section className="section">
+    <section
+      className="section"
+      style={{ overflow: 'hidden', position: 'relative' }}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       <div className="container">
-        <div className="section-header">
+        <div className="section-header" style={{ marginBottom: '4rem' }}>
           <h2 className="text-gradient">Recent Masterpieces</h2>
           <p>Thousands of books are being written right now. Join the revolution.</p>
         </div>
-        <div className="books-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '2rem' }}>
-          {samples.map((book, i) => (
+
+        <div style={{ position: 'relative', width: '100%' }}>
+          {/* Side Arrows */}
+          <button
+            onClick={prevStep}
+            className="btn-v-secondary glass"
+            style={{
+              position: 'absolute',
+              left: '-20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 10,
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+            }}
+          >
+            <ChevronRight size={24} style={{ transform: 'rotate(180deg)' }} />
+          </button>
+
+          <button
+            onClick={nextStep}
+            className="btn-v-secondary glass"
+            style={{
+              position: 'absolute',
+              right: '-20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 10,
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+            }}
+          >
+            <ChevronRight size={24} />
+          </button>
+
+          <div style={{ padding: '1rem 0' }}>
             <motion.div
-              key={i}
-              className="book-card"
-              whileHover={{ y: -10 }}
-              style={{ cursor: 'pointer' }}
+              style={{
+                display: 'flex',
+                gap: '2rem',
+                cursor: 'grab'
+              }}
+              animate={{ x: -index * (300 + 32) }}
+              transition={{ type: "spring", stiffness: 200, damping: 25 }}
             >
-              <div className="book-cover" style={{ height: '320px', borderRadius: '1rem', overflow: 'hidden', marginBottom: '1rem', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <img src={book.cover} alt={book.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-              <h4 style={{ fontSize: '1.1rem', marginBottom: '0.25rem' }}>{book.title}</h4>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>By {book.author}</p>
+              {samples.map((book, i) => (
+                <motion.div
+                  key={i}
+                  className="book-card"
+                  whileHover={{ y: -10 }}
+                  style={{
+                    flex: '0 0 300px',
+                    opacity: 1,
+                    transition: '0.5s',
+                    scale: index === i ? 1.05 : 0.95,
+                    filter: Math.abs(index - i) > 1 ? 'blur(1px) opacity(0.5)' : 'none'
+                  }}
+                >
+                  <div className="book-cover" style={{
+                    height: '420px',
+                    borderRadius: '1.5rem',
+                    overflow: 'hidden',
+                    marginBottom: '1.5rem',
+                    boxShadow: index === i ? '0 30px 60px -12px rgba(99, 102, 241, 0.3)' : '0 20px 40px -12px rgba(0,0,0,0.5)',
+                    border: index === i ? '2px solid rgba(99, 102, 241, 0.5)' : '1px solid rgba(255,255,255,0.05)',
+                    position: 'relative'
+                  }}>
+                    <img src={book.cover} alt={book.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <div className="book-hover-overlay" style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      opacity: 0,
+                      transition: '0.3s'
+                    }}>
+                      <button className="btn btn-primary" style={{ transform: 'scale(0.8)' }}>Read Story</button>
+                    </div>
+                  </div>
+                  <h4 style={{
+                    fontSize: '1.25rem',
+                    marginBottom: '0.5rem',
+                    fontWeight: '700',
+                    color: index === i ? 'white' : 'rgba(255,255,255,0.7)'
+                  }}>{book.title}</h4>
+                  <p style={{
+                    color: index === i ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                    fontSize: '0.8rem',
+                    letterSpacing: '2px',
+                    fontWeight: '800'
+                  }}>BY {book.author.toUpperCase()}</p>
+                </motion.div>
+              ))}
             </motion.div>
-          ))}
+          </div>
         </div>
       </div>
     </section>
